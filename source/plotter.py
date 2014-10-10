@@ -9,14 +9,14 @@ matplotlib.use('WxAgg')
 
 from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg as FigureCanvas
 from matplotlib.figure import Figure
-from matplotlib.widgets import SpanSelector
 
+# pylint: disable=R0904
 class Plotter(wx.Panel):
-    """Accepts data and plots it using wx.Panel and matplotlib's plotting interface.
-    
+    """Accepts data and plots it using wx.Panel and matplotlib.
+
     Keyword arguments:
     data (iterable) -- data to be plotted, passed to matplotlib
-    zoomfactor (float) -- zooming factor for both zoomout and zoomin (default 1.25)
+    zoomfactor (float) -- zooming factor for plot (default 1.25)
     """
     def __init__(self, parent, data=None, zoomfactor=1.25):
 
@@ -38,8 +38,8 @@ class Plotter(wx.Panel):
 
         self.canvas = FigureCanvas(self, -1, self.figure)
 
-        self.canvas.Bind(wx.EVT_KEY_DOWN, self.OnKeyDown)
-        self.canvas.Bind(wx.EVT_MOUSEWHEEL, self.MouseWheel)
+        self.canvas.Bind(wx.EVT_KEY_DOWN, self._on_key_down)
+        self.canvas.Bind(wx.EVT_MOUSEWHEEL, self._on_mouse_wheel)
         self.SetFocus()
 
         self.sizer = wx.BoxSizer(wx.VERTICAL)
@@ -52,7 +52,7 @@ class Plotter(wx.Panel):
             data = self.data
         self.axes.plot(data, color='#1498DB', linewidth=0.3)
 
-    def zoom(self, factor):
+    def _zoom(self, factor):
         """Private function, use zoomin and zoomout instead."""
         self.scale *= factor
         x_min, x_max = self.axes.get_xlim()
@@ -63,13 +63,13 @@ class Plotter(wx.Panel):
         """Zooms in plot with factor (default self.zoomfactor)"""
         if not factor:
             factor = self.zoomfactor
-        self.zoom(self.zoomfactor)
+        self._zoom(self.zoomfactor)
 
     def zoomout(self, factor=None):
         """Zooms in plot with factor (default self.zoomfactor)"""
         if not factor:
             factor = self.zoomfactor
-        self.zoom(1.0/self.zoomfactor)
+        self._zoom(1.0/self.zoomfactor)
 
     def span(self, direction):
         """spans 1/10th of the way left or right, based on direction parameter
@@ -82,12 +82,12 @@ class Plotter(wx.Panel):
         elif direction == 'left':
             multiplier = -1
         x_min, x_max = self.axes.get_xlim()
-        range = x_max - x_min
-        step = multiplier * (range/10)
+        data_range = x_max - x_min
+        step = multiplier * (data_range/10)
         self.axes.set_xlim(x_min + step, x_max + step)
         self.canvas.draw()
 
-    def OnKeyDown(self, event=None):
+    def _on_key_down(self, event=None):
         """Event handler for key down events."""
         keycode = event.GetKeyCode()
         if keycode == 73:
@@ -95,15 +95,13 @@ class Plotter(wx.Panel):
         elif keycode == 79:
             self.zoomout()
         elif keycode == wx.WXK_LEFT:
-            print 'left'
             self.span('left')
         elif keycode == wx.WXK_RIGHT:
-            print 'right'
             self.span('right')
         else:
             event.Skip()
 
-    def MouseWheel(self, event=None):
+    def _on_mouse_wheel(self, event=None):
         """Event handler for mouse wheel events."""
         rotation = event.GetWheelRotation()
         if rotation > 0:

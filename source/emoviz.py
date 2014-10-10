@@ -10,13 +10,13 @@ class EmoViz(object):
     """Starting point for EmoViz application."""
     def __init__(self):
         app = wx.PySimpleApp()
-        fr = wx.Frame(None, title="Hello, world.", size=(800, 500))
-        wr = WaveReader('data.wav')
-        plotter = Plotter(fr, wr.readframes())
+        frame = wx.Frame(None, title="Hello, world.", size=(800, 500))
+        wavereader = WaveReader('data.wav')
+        plotter = Plotter(frame, wavereader.readframes())
 
         plotter.draw()
-        fr.Show()
+        frame.Show()
         app.MainLoop()
 
-if __name == "__main__":
+if __name__ == "__main__":
     EmoViz()
