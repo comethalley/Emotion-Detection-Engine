@@ -6,7 +6,7 @@ import wx
 import matplotlib
 import numpy
 matplotlib.use('WxAgg')
-
+import random
 from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg as FigureCanvas
 from matplotlib.figure import Figure
 
@@ -23,7 +23,7 @@ class Plotter(wx.Panel):
         self.data = data
         self.zoomfactor = zoomfactor
         self.scale = 1
-
+        self.prev_mouse_location = None
         wx.Panel.__init__(self, parent)
 
         self.figure = Figure()
@@ -40,6 +40,7 @@ class Plotter(wx.Panel):
 
         self.canvas.Bind(wx.EVT_KEY_DOWN, self._on_key_down)
         self.canvas.Bind(wx.EVT_MOUSEWHEEL, self._on_mouse_wheel)
+        #self.canvas.Bind(wx.EVT_MOTION, self._on_mousemove)
         self.SetFocus()
 
         self.sizer = wx.BoxSizer(wx.VERTICAL)
@@ -52,24 +53,34 @@ class Plotter(wx.Panel):
             data = self.data
         self.axes.plot(data, color='#1498DB', linewidth=0.3)
 
-    def _zoom(self, factor):
+    def _zoom(self, factor, system=None):
         """Private function, use zoomin and zoomout instead."""
         self.scale *= factor
         x_min, x_max = self.axes.get_xlim()
-        self.axes.set_xlim(x_min/factor, x_max/factor)
+        if not system:
+            self.axes.set_xlim(x_min/factor, x_max/factor)
+        else:
+            width = x_max - x_min
+            point = system[0]
+            ratio = system[1]
+            new_width = width/factor
+
+            new_x_min = (point - ratio * new_width)
+            self.axes.set_xlim(new_x_min, new_x_min + new_width)
+
         self.canvas.draw()
 
-    def zoomin(self, factor=None):
+    def zoomin(self, factor=None, system=None):
         """Zooms in plot with factor (default self.zoomfactor)"""
         if not factor:
             factor = self.zoomfactor
-        self._zoom(self.zoomfactor)
+        self._zoom(self.zoomfactor, system)
 
-    def zoomout(self, factor=None):
+    def zoomout(self, factor=None, system=None):
         """Zooms in plot with factor (default self.zoomfactor)"""
         if not factor:
             factor = self.zoomfactor
-        self._zoom(1.0/self.zoomfactor)
+        self._zoom(1.0/self.zoomfactor, system)
 
     def span(self, direction):
         """spans 1/10th of the way left or right, based on direction parameter
@@ -104,8 +115,25 @@ class Plotter(wx.Panel):
     def _on_mouse_wheel(self, event=None):
         """Event handler for mouse wheel events."""
         rotation = event.GetWheelRotation()
-        if rotation > 0:
-            self.zoomin()
-        else:
-            self.zoomout()
 
+        w = self.canvas.GetClientSize()[0]
+        x_pos = round(event.GetX() - 0.125 * w) - 1
+        rx = x_pos / (0.75 * w)
+
+        x_min, x_max = self.axes.get_xlim()
+        width = x_max - x_min
+        point = rx * width + x_min
+
+        if rotation > 0:
+            self.zoomin(system=(point, rx))
+        else:
+            self.zoomout(system=(point, rx))
+"""
+    def _on_mousemove(self, event=None):
+        w = self.canvas.GetClientSize()[0]
+        x_pos = round(event.GetX() - 0.125 * w) - 1
+        if self.prev_mouse_location and event.LeftIsDown():
+            x_min, x_max = self.axes.get_xlim()
+            self.axes.set_xlim(x_min + (x_pos - self.prev_mouse_location), x_max + (x_pos - self.prev_mouse_location))
+        self.prev_mouse_location = x_pos
+"""

@@ -22,4 +22,10 @@ class WaveReader(object):
         wav = wave.open(self.filepath, 'r')
         frames = numpy.fromstring(wav.readframes(nframes), 'Int16')
         wav.close()
+        f = open('data', 'a')
+        l = list(frames[::10])
+        L = []
+        for i in xrange(len(l)):
+            L.append([i, l[i]])
+        f.write(str(L))
         return frames
