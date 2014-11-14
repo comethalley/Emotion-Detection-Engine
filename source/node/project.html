@@ -4,51 +4,23 @@
 <title>Project</title>
 	<meta content="charset=utf-8">
 	<title>Flot Examples: Basic Usage</title>
-	<script src="jquery.min.js"></script>
-	<script language="javascript" type="text/javascript" src="jquery.flot.min.js"></script>
-	<script language="javascript" type="text/javascript" src="data.js"></script>
+	<script src="js/vendor/jquery.min.js"></script>
+	<script src="js/vendor/jquery.flot.min.js"></script>
+	<script src="js/vendor/jquery.flot.selection.min.js"></script>
+	<script src="js/vendor/jquery.flot.navigate.min.js"></script>
+	<script src="js/data.js"></script>
 </head>
 <body>
 	<div id="content">
 		<div class="demo-container">
-			<div id="placeholder" style="width:800px; height: 600px; margin: auto" class="demo-placeholder"></div>
+			<div id="placeholder" style="width:800px; height: 500px; margin: auto" class="demo-placeholder"></div>
+			<div id="overview" style="width:800px; height: 100px; margin: auto" class="demo-placeholder"></div>
 		</div>
 	</div>
 	<button onclick="document.getElementById('audio').play()"><h2>Play!</h2></button>
-<audio src="data.wav" id="audio"></audio>
-	<script>
-	plot = null;
-$(document).ready(function () {
-	var length = null;
-	$('#audio').on('loadedmetadata', function() {
-		length = this.seekable.end(0);
-	});
-	var d2 = [];
-
-	plot = $.plot("#placeholder", [[], frames, d2], {yaxis : {autoscaleMargin: 0.01}});
-
-	var axes = plot.getAxes();
-	var xmin = axes.xaxis.min;
-	var xmax = axes.xaxis.max;
-	var ymin = axes.yaxis.min;
-	var ymax = axes.yaxis.max;
-
-	function replot(elapsedFraction) {
-		d2 = [[elapsedFraction * (xmax - xmin), ymin], [elapsedFraction * (xmax - xmin), ymax]];
-		plot.setData([[], frames, d2]);
-		plot.setupGrid();
-		plot.draw();
-	}
-	replot(0);
-	var prevTime = 0;
-	window.setInterval(function () {
-		var currentTime = $('#audio').get(0).currentTime;
-		if (currentTime != prevTime) {
-			replot(currentTime/length);
-			prevTime = currentTime;
-		}
-	}, 100);
-});
-</script>
+	<button onclick="document.getElementById('audio').pause()"><h2>Pause!</h2></button>
+	<button id="playpart"><h2>Play part</h2></button>
+	<audio src="data.wav" id="audio"></audio>
+	<script src="js/main.js"></script>
 </body>
 </html>
