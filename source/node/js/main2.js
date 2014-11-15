@@ -2,14 +2,12 @@ plot = null;
 function prepareFrames(frames) {
 	var i = 5;
 	var ret = frames.splice(0.2 * (frames.length - 200), 200, null);
-	//console.log(frames, ret);
+	console.log(frames, ret);
 	return [frames, ret];
 }
 
-function init() {
+$(document).ready(function () {
 	var length = null;
-	printer = null;
-	console.log(frames.length);
 	$('#audio').on('loadedmetadata', function() {
 		length = this.seekable.end(0);
 	});
@@ -33,7 +31,7 @@ function init() {
 		xaxis: {
 			ticks: 0,
 			min: 0,
-			max: 1100
+			max: 11000
 		},
 		colors: ['#057cb8', 'orange', 'red', 'green'],
         grid: {
@@ -94,7 +92,7 @@ function init() {
 
 	function replot(elapsedFraction) {
 		data[1] = [[elapsedFraction * (xmax - xmin), ymin], [elapsedFraction * (xmax - xmin), ymax]];
-		//data[0] = frames.slice(0, elapsedFraction * frames.length);
+		data[0] = frames.slice(0, elapsedFraction * frames.length);
 		//data[1] = frames.slice(0, elapsedFraction * frames.length);
 		++i;
 		plot.setData(data);
@@ -126,7 +124,7 @@ function init() {
         });
         var axes = plot.getAxes();
         var fraction = (axes.xaxis.min - axes.xaxis.datamin)/(axes.xaxis.datamax - axes.xaxis.datamin);
-        $('#audio').data('playpart', true);
+        $('#audio').data('playpart', true)
         var audio = $('#audio').get(0);
         audio.pause();
         var end = audio.seekable.end(0);
@@ -141,15 +139,8 @@ function init() {
         }));
         overview = $.plot('#overview', data,
             $.extend(true, {}, options, {
-             xaxis: { min: xmin, max: xmax }
+             xaxis: { min: xmin, max    : xmax },
+             pan: {interactive: false}
         }));
     });
-}
-
-$(document).ready(function() {
-	audioState++;
-	console.log(audioState);
-	if (audioState == 2) {
-		init();
-	}
 });

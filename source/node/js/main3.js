@@ -6,17 +6,15 @@ function prepareFrames(frames) {
 	return [frames, ret];
 }
 
-function init() {
+$(document).ready(function () {
 	var length = null;
-	printer = null;
-	console.log(frames.length);
 	$('#audio').on('loadedmetadata', function() {
 		length = this.seekable.end(0);
 	});
 
 	var d2 = [];
-	//var preparedFrames = prepareFrames(frames);
-	var data = [frames, d2];
+	var preparedFrames = prepareFrames(frames);
+	var data = [preparedFrames[0], preparedFrames[1], d2];
 
 	var options = {
 		series: {
@@ -35,7 +33,7 @@ function init() {
 			min: 0,
 			max: 1100
 		},
-		colors: ['#057cb8', 'orange', 'red', 'green'],
+		colors: ['#057cb8', 'darkorange', 'red', 'green'],
         grid: {
             hoverable: true,
             autoHighlight: false
@@ -60,7 +58,8 @@ function init() {
 			mode: "x",
 			color: '#057cb8'
 		},
-		colors: ['#057cb8', 'orange', 'red', 'green']
+		colors: ['#057cb8', 'orange', 'red', 'green'],
+		pan: {interactive: false}
         });
 
     var placeholder = $('#placeholder');
@@ -93,13 +92,12 @@ function init() {
 	i = 0;
 
 	function replot(elapsedFraction) {
-		data[1] = [[elapsedFraction * (xmax - xmin), ymin], [elapsedFraction * (xmax - xmin), ymax]];
+		data[2] = [[elapsedFraction * (xmax - xmin), ymin], [elapsedFraction * (xmax - xmin), ymax]];
 		//data[0] = frames.slice(0, elapsedFraction * frames.length);
 		//data[1] = frames.slice(0, elapsedFraction * frames.length);
 		++i;
 		plot.setData(data);
         overview.setData(data);
-        plot.getData()[1].lines.lineWidth = 3
 		plot.setupGrid();
         overview.setupGrid();
         overview.draw();
@@ -126,7 +124,7 @@ function init() {
         });
         var axes = plot.getAxes();
         var fraction = (axes.xaxis.min - axes.xaxis.datamin)/(axes.xaxis.datamax - axes.xaxis.datamin);
-        $('#audio').data('playpart', true);
+        $('#audio').data('playpart', true)
         var audio = $('#audio').get(0);
         audio.pause();
         var end = audio.seekable.end(0);
@@ -141,15 +139,7 @@ function init() {
         }));
         overview = $.plot('#overview', data,
             $.extend(true, {}, options, {
-             xaxis: { min: xmin, max: xmax }
+             xaxis: { min: xmin, max    : xmax }
         }));
     });
-}
-
-$(document).ready(function() {
-	audioState++;
-	console.log(audioState);
-	if (audioState == 2) {
-		init();
-	}
 });
