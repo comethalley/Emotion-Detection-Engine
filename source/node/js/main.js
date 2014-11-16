@@ -36,13 +36,21 @@ function init(config) {
         xaxis: {
             min: 0,
             max: framesPerSecond * secondsPerWindow
+        }
+    });
+
+    var mainPlotOptionsAfterStreaming = $.extend(true, {}, mainPlotOptions, {
+        xaxis: {
+            max: null
         },
         pan: {
             interactive: true
         }
     });
 
-    var overviewPlotOptions = $.extend(true, {}, baseOptions, {
+    var overviewPlotOptions = baseOptions;
+
+    var overviewPlotOptionsAfterStreaming = $.extend(true, {}, overviewPlotOptions, {
         selection: {
             mode: "x",
             color: '#057cb8'
@@ -75,6 +83,9 @@ function init(config) {
 
     //event handlers on plot containers
     overviewContainer.on('plotselected', function(e, ranges) {
+        if (!streamed) {
+            return;
+        }
         plot = $.plot(plotContainer, data,
             $.extend(true, {}, mainPlotOptions, {
              xaxis: { min: ranges.xaxis.from, max: ranges.xaxis.to }
@@ -82,6 +93,9 @@ function init(config) {
     });
 
     plotContainer.on('plotpan', function(e, plot, args) {
+        if (!streamed) {
+            return;
+        }
         var axes = plot.getAxes();
         var ranges = {
             xaxis: {
@@ -93,6 +107,9 @@ function init(config) {
     });
 
     plotContainer.on('dblclick', function() {
+        if (!streamed) {
+            return;
+        }
         var xaxis = plot.getAxes().xaxis;
         var xmin = xaxis.datamin;
         var xmax = xaxis.datamax;
@@ -108,6 +125,9 @@ function init(config) {
 
     //play selection part button event handler
     $('#playpart').on('click', function() {
+        if (!streamed) {
+            return;
+        }
         $('#audio').on('timeupdate', function(e) {
             var startFraction = (axes.xaxis.max - axes.xaxis.datamin)/(axes.xaxis.datamax - axes.xaxis.datamin);
             if ((this.currentTime/this.seekable.end(0)) > startFraction) {
@@ -132,25 +152,33 @@ function init(config) {
         var ymin = axes.yaxis.datamin;
         var ymax = axes.yaxis.datamax;
 
-        if (!streamed) {
-            data[0] = frames.slice(0, elapsedFraction * frames.length);
-            plot.setData(data);
+        if (elapsedFraction == 1) {
+            streamed = true;
             if (xmax > framesPerSecond * secondsPerWindow) {
                 var xaxis = mainPlotOptions.xaxis;
                 xaxis.max = xmax;
                 xaxis.min = xmax - (framesPerSecond * secondsPerWindow);
             }
+            plot = $.plot(plotContainer, data, mainPlotOptions);
+            overview = $.plot(overviewContainer, data, overviewPlotOptions);
         }
 
-        if (streamed) {
-            data[1] = [[(xmax - xmin), ymin], [(xmax - xmin), ymax]];
+        else if (!streamed) {
+            data[0] = frames.slice(0, elapsedFraction * frames.length);
+            if (xmax > framesPerSecond * secondsPerWindow) {
+                var xaxis = mainPlotOptions.xaxis;
+                xaxis.max = xmax;
+                xaxis.min = xmax - (framesPerSecond * secondsPerWindow);
+            }
+            plot = $.plot(plotContainer, data, mainPlotOptions);
+            overview = $.plot(overviewContainer, data, overviewPlotOptions);
         }
 
-        plot = $.plot(plotContainer, data, mainPlotOptions);
-        overview = $.plot(overviewContainer, data, overviewPlotOptions);
-
-        if (elapsedFraction == 1) {
-            streamed = true;
+        else if (streamed) {
+            data[1] = [[elapsedFraction * (xmax - xmin), ymin], [elapsedFraction * (xmax - xmin), ymax]];
+            data[0] = frames;
+            plot = $.plot(plotContainer, data, mainPlotOptionsAfterStreaming);
+            overview = $.plot(overviewContainer, data, overviewPlotOptionsAfterStreaming);
         }
     }
 
