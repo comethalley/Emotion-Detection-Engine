@@ -1,24 +1,17 @@
-plot = null;
-function prepareFrames(frames) {
-	var i = 5;
-	var ret = frames.splice(0.2 * (frames.length - 200), 200, null);
-	//console.log(frames, ret);
-	return [frames, ret];
-}
+var secondsPerWindow = 20;
 
 function init() {
 	var length = null;
 	printer = null;
-	console.log(frames.length);
+
 	$('#audio').on('loadedmetadata', function() {
 		length = this.seekable.end(0);
 	});
 
 	var d2 = [];
-	//var preparedFrames = prepareFrames(frames);
 	var data = [frames, d2];
 
-	var options = {
+	var baseOptions = {
 		series: {
 			lines: {
 				show: true,
@@ -31,48 +24,46 @@ function init() {
             panRange: false
 		},
 		xaxis: {
-			ticks: 0,
-			min: 0,
-			max: 1100
+			ticks: 0
 		},
 		colors: ['#057cb8', 'orange', 'red', 'green'],
         grid: {
             hoverable: true,
             autoHighlight: false
-        },
-        pan: {
-            interactive: true
         }
 	};
 
-	plot = $.plot("#placeholder", data, options);
+	var mainPlotOptions = $.extend(true, {}, baseOptions, {
+		xaxis: {
+			min: 0,
+			max: 10 * secondsPerWindow
+		},
+        pan: {
+            interactive: true
+        }
+	});
 
-    var overview = $.plot('#overview', data, {
-        xaxis: {
-            ticks: 0
-        },
-        yaxis: {
-            ticks: 0
-        },
-        lines: {
-            lineWidth: 1
-        },selection: {
+    var overviewPlotOptions = $.extend(true, {}, baseOptions, {
+        selection: {
 			mode: "x",
 			color: '#057cb8'
-		},
-		colors: ['#057cb8', 'orange', 'red', 'green']
-        });
+		}
+    });
 
-    var placeholder = $('#placeholder');
-    $('#overview').on('plotselected', function(e, ranges) {
+	plot = $.plot("#placeholder", data, mainPlotOptions);
+	overview = $.plot('#overview', data, overviewPlotOptions);
+
+    var mainPlaceholder = $('#placeholder');
+	var overviewPlaceholder = $('#overview');
+
+    overviewPlaceholder.on('plotselected', function(e, ranges) {
         plot = $.plot('#placeholder', data,
-            $.extend(true, {}, options, {
+            $.extend(true, {}, mainPlotOptions, {
              xaxis: { min: ranges.xaxis.from, max: ranges.xaxis.to }
         }));
     });
 
-    //.on('plothover', function(e, pos) {
-    placeholder.on('plotpan', function(e, plot, args) {
+    mainPlaceholder.on('plotpan', function(e, plot, args) {
         var axes = plot.getAxes();
         var ranges = {
             xaxis: {
@@ -83,23 +74,22 @@ function init() {
         overview.setSelection(ranges, true)
     });
 
-
-	var axes = plot.getAxes();
-	var xmin = axes.xaxis.datamin;
-	var xmax = axes.xaxis.datamax;
-	var ymin = axes.yaxis.datamin;
-	var ymax = axes.yaxis.datamax;
-
-	i = 0;
-
 	function replot(elapsedFraction) {
-		data[1] = [[elapsedFraction * (xmax - xmin), ymin], [elapsedFraction * (xmax - xmin), ymax]];
-		//data[0] = frames.slice(0, elapsedFraction * frames.length);
-		//data[1] = frames.slice(0, elapsedFraction * frames.length);
-		++i;
+
+		var axes = plot.getAxes();
+		var xmin = axes.xaxis.datamin;
+		var xmax = axes.xaxis.datamax;
+		var ymin = axes.yaxis.datamin;
+		var ymax = axes.yaxis.datamax;
+
+		data[0] = frames.slice(0, elapsedFraction * frames.length);
+
+		data[1] = [[(xmax - xmin), ymin], [(xmax - xmin), ymax]];
+
 		plot.setData(data);
         overview.setData(data);
         plot.getData()[1].lines.lineWidth = 3
+
 		plot.setupGrid();
         overview.setupGrid();
         overview.draw();
@@ -108,10 +98,12 @@ function init() {
 
 	replot(0);
 	var prevTime = 0;
+
 	window.setInterval(function () {
-		var currentTime = $('#audio').get(0).currentTime;
+		var audio = $('#audio').get(0);
+		var currentTime = audio.currentTime;
 		if (currentTime != prevTime) {
-			replot(currentTime/length);
+			replot(currentTime/audio.seekable.end(0));
 			prevTime = currentTime;
 		}
 	}, 100);
@@ -135,12 +127,15 @@ function init() {
     });
 
     $('#placeholder').on('dblclick', function() {
-        plot = $.plot('#placeholder', data,
-            $.extend(true, {}, options, {
+        var xaxis = plot.getAxes().xaxis;
+		var xmin = xaxis.datamin;
+		var xmax = xaxis.datamax;
+		plot = $.plot('#placeholder', data,
+            $.extend(true, {}, mainPlotOptions, {
              xaxis: { min: xmin, max: xmax }
         }));
         overview = $.plot('#overview', data,
-            $.extend(true, {}, options, {
+            $.extend(true, {}, overviewPlotOptions, {
              xaxis: { min: xmin, max: xmax }
         }));
     });
@@ -148,7 +143,6 @@ function init() {
 
 $(document).ready(function() {
 	audioState++;
-	console.log(audioState);
 	if (audioState == 2) {
 		init();
 	}
