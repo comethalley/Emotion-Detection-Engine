@@ -8,7 +8,8 @@ $(document).ready(function() {
 function init(config) {
 
     //configuration options for main plot and overview
-    var secondsPerWindow = 20;
+    var secondsPerWindow = 5;
+    var framesPerSecond = 10;
     var baseOptions = {
         series: {
             lines: {
@@ -34,7 +35,7 @@ function init(config) {
     var mainPlotOptions = $.extend(true, {}, baseOptions, {
         xaxis: {
             min: 0,
-            max: 10 * secondsPerWindow
+            max: framesPerSecond * secondsPerWindow
         },
         pan: {
             interactive: true
@@ -58,8 +59,8 @@ function init(config) {
     var overviewContainer = $('#overview');
 
     //Flot objects for plots
-    var plot = $.plot(plotContainer, data, mainPlotOptions);
-    var overview = $.plot(overviewContainer, data, overviewPlotOptions);
+    var plot = $.plot(plotContainer, [], mainPlotOptions);
+    var overview = $.plot(overviewContainer, [], overviewPlotOptions);
 
     //main timed loop for replotting
     var prevTime = 0;
@@ -125,25 +126,32 @@ function init(config) {
     });
 
     function replot(elapsedFraction) {
-
         var axes = plot.getAxes();
         var xmin = axes.xaxis.datamin;
         var xmax = axes.xaxis.datamax;
         var ymin = axes.yaxis.datamin;
         var ymax = axes.yaxis.datamax;
 
-        data[0] = frames.slice(0, elapsedFraction * frames.length);
+        if (!streamed) {
+            data[0] = frames.slice(0, elapsedFraction * frames.length);
+            plot.setData(data);
+            if (xmax > framesPerSecond * secondsPerWindow) {
+                var xaxis = mainPlotOptions.xaxis;
+                xaxis.max = xmax;
+                xaxis.min = xmax - (framesPerSecond * secondsPerWindow);
+            }
+        }
 
-        data[1] = [[(xmax - xmin), ymin], [(xmax - xmin), ymax]];
+        if (streamed) {
+            data[1] = [[(xmax - xmin), ymin], [(xmax - xmin), ymax]];
+        }
 
-        plot.setData(data);
-        plot.getData()[1].lines.lineWidth = 3
-        overview.setData(data);
+        plot = $.plot(plotContainer, data, mainPlotOptions);
+        overview = $.plot(overviewContainer, data, overviewPlotOptions);
 
-        plot.setupGrid();
-        plot.draw();
-        overview.setupGrid();
-        overview.draw();
+        if (elapsedFraction == 1) {
+            streamed = true;
+        }
     }
 
     replot(0);
