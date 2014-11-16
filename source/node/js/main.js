@@ -5,7 +5,23 @@ $(document).ready(function() {
     }
 });
 
+function prepareFrames(frames, sections) {
+    var b = [];
+    for (var i = 0; i < sections.length; ++i) {
+        var start = sections[i][0];
+        var end = sections[i][1];
+        var last = frames[end];
+        b = b.concat(frames.splice(start, end - start, frames[start], null).concat([last, null]));
+    }
+    console.log(frames.length, frames, "\n", b.length, b);
+    return [frames, b];
+}
+
 function init(config) {
+
+    //prepare dummy data
+    var sections = [[20, 30], [60, 70]];
+    frames = prepareFrames(frames, sections);
 
     //configuration options for main plot and overview
     var secondsPerWindow = 5;
@@ -59,7 +75,7 @@ function init(config) {
 
     //state and data variables
     var streamed = false;
-    var data = [frames, []];
+    var data = [frames[0], frames[1], []];
     var audio = document.getElementById('audio');
 
     //jQuery elements for containers
@@ -152,7 +168,7 @@ function init(config) {
         var ymin = axes.yaxis.datamin;
         var ymax = axes.yaxis.datamax;
 
-        if (elapsedFraction == 1) {
+        if (elapsedFraction == 1 && !streamed) {
             streamed = true;
             if (xmax > framesPerSecond * secondsPerWindow) {
                 var xaxis = mainPlotOptions.xaxis;
@@ -164,7 +180,27 @@ function init(config) {
         }
 
         else if (!streamed) {
-            data[0] = frames.slice(0, elapsedFraction * frames.length);
+            var lastFrame = elapsedFraction * (frames[0].length + frames[1].length);
+            var lastAIndex = 0;
+            var lastBIndex = 0;
+            for (var i = 0; i < frames[0].length; ++i) {
+                if (frames[0][i] == null) {
+                    continue;
+                }
+                if (frames[0][i][0] <= lastFrame) {
+                    lastAIndex = i;
+                }
+            }
+            for (var i = 0; i < frames[1].length; ++i) {
+                if (frames[1][i] == null) {
+                    continue;
+                }
+                if (frames[1][i][0] <= lastFrame) {
+                    lastBIndex = i;
+                }
+            }
+            data[0] = frames[0].slice(0, lastAIndex + 1);
+            data[1] = frames[1].slice(0, lastBIndex + 1);
             if (xmax > framesPerSecond * secondsPerWindow) {
                 var xaxis = mainPlotOptions.xaxis;
                 xaxis.max = xmax;
@@ -175,8 +211,9 @@ function init(config) {
         }
 
         else if (streamed) {
-            data[1] = [[elapsedFraction * (xmax - xmin), ymin], [elapsedFraction * (xmax - xmin), ymax]];
-            data[0] = frames;
+            data[2] = [[elapsedFraction * (xmax - xmin), ymin], [elapsedFraction * (xmax - xmin), ymax]];
+            data[0] = frames[0];
+            data[1] = frames[1];
             plot = $.plot(plotContainer, data, mainPlotOptionsAfterStreaming);
             overview = $.plot(overviewContainer, data, overviewPlotOptionsAfterStreaming);
         }
