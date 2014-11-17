@@ -29,11 +29,11 @@
       <script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
       <![endif]-->
       <!-- Plotter -->
-      <script src="Emodata/jquery.min.js"></script>
-      <script src="Emodata/jquery.flot.min.js"></script>
-      <script src="Emodata/vendor/jquery.flot.selection.min.js"></script>
-      <script src="Emodata/vendor/jquery.flot.navigate.min.js"></script>
-      <script src="Emodata/data.js"></script>
+      <script src="Emodata/vendor/jquery.min.js"></script>
+	<script src="Emodata/vendor/jquery.flot.min.js"></script>
+	<script src="Emodata/vendor/jquery.flot.selection.min.js"></script>
+	<script src="Emodata/vendor/jquery.flot.navigate.min.js"></script>
+    
       <style>
          .hv {
          font-size:34px; padding:10px;cursor:pointer; color:green;
@@ -354,10 +354,7 @@
                         <span>Charts</span>
                         </a>
                         <ul class="sub">
-                           <li><a href="morris.html">Morris</a></li>
-                           <li><a href="chartjs.html">Chartjs</a></li>
-                           <li><a href="flot_chart.html">Flot Charts</a></li>
-                           <li><a href="c3_chart.html">C3 Chart</a></li>
+                           <li><a href="chartjs.html">Chartjs</a></li>                           
                         </ul>
                      </li>
                      <!--<li class="sub-menu">
@@ -495,20 +492,13 @@
                      <div class="panel-body">
                         <!-- Plotter -->
                         <div id="content">
-                           <div class="demo-container">
-                              <div id="eplaceholder" style="width:700px; height: 500px; margin: auto" class="demo-placeholder"></div>
-                              <div id="eoverview" style="width:700px; height: 100px; margin: auto" class="demo-placeholder"></div>
-                           </div>
+                            <div class="demo-container">
+                                <div id="placeholder" style="width:800px; height: 500px; margin: auto" class="demo-placeholder"></div>
+                                <div id="overview" style="width:800px; height: 100px; margin: auto" class="demo-placeholder"></div>
+                            </div>
                         </div>
-                        <!--<button onclick="document.getElementById('audio').play()">
-                           <h2>Play!</h2>
-                        </button>
-                        <button onclick="document.getElementById('audio').pause()">
-                           <h2>Pause!</h2>
-                        </button>
-                        <button id="playpart">
-                           <h2>Play part</h2>
-                        </button>-->
+                        
+                        
 
                         </div>
                   </section>
@@ -536,8 +526,14 @@
                         <div class="panel-body">
                            <span class="glyphicon glyphicon-play-circle hv" onclick="document.getElementById('audio').play()"></span>
                            <span class="glyphicon glyphicon-pause hv" onclick="document.getElementById('audio').pause()" ></span>
-                           <span class="glyphicon glyphicon-zoom-in hv" id="playpart"></span>
-                           <span class="glyphicon glyphicon-zoom-out hv" ></span>
+                           <span class="glyphicon glyphicon-transfer hv" id="playpart"></span>
+                           <audio src="Emodata/data.wav" id="audio"></audio>
+                        <script>
+                            var audioState = 0;
+                        </script>
+                        <script src="Emodata/reader.js"></script>
+                        <script src="Emodata/main.js"></script>
+                        <a href="chartjs.html"><span class="glyphicon glyphicon-stop hv" ></span> </a>
                         </div>
                      </section>
                      <!--widget graph end-->
@@ -1235,7 +1231,7 @@
                                     1 day ago
                                  </p>
                                  <p>
-                                    <a href="#">Jim Doe </a>Purchased new equipments for zonal office setup
+                                    <a href="#">Shubham </a>Purchased new equipments for zonal office setup
                                  </p>
                               </div>
                            </div>
