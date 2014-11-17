@@ -1,78 +1,117 @@
-plot = null;
-function prepareFrames(frames) {
-	var i = 5;
-	var ret = frames.splice(0.2 * (frames.length - 200), 200, null);
-	//console.log(frames, ret);
-	return [frames, ret];
+$(document).ready(function() {
+    audioState++;
+    if (audioState == 2) {
+        init();
+    }
+});
+
+function prepareFrames(frames, sections) {
+    var b = [];
+    for (var i = 0; i < sections.length; ++i) {
+        var start = sections[i][0];
+        var end = sections[i][1];
+        var last = frames[end];
+        b = b.concat(frames.splice(start, end - start, frames[start], null).concat([last, null]));
+    }
+    console.log(frames.length, frames, "\n", b.length, b);
+    return [frames, b];
 }
 
-function init() {
-	var length = null;
-	printer = null;
-	console.log(frames.length);
-	$('#audio').on('loadedmetadata', function() {
-		length = this.seekable.end(0);
-	});
+function init(config) {
 
-	var d2 = [];
-	//var preparedFrames = prepareFrames(frames);
-	var data = [frames, d2];
+    //prepare dummy data
+    var sections = [[20, 30], [60, 70]];
+    frames = prepareFrames(frames, sections);
 
-	var options = {
-		series: {
-			lines: {
-				show: true,
-				lineWidth: 1
-			}
-		},
-		yaxis: {
-			autoscaleMargin: 0.01,
-			ticks: 0,
+    //configuration options for main plot and overview
+    var secondsPerWindow = 5;
+    var framesPerSecond = 10;
+    var baseOptions = {
+        series: {
+            lines: {
+                show: true,
+                lineWidth: 1
+            }
+        },
+        yaxis: {
+            autoscaleMargin: 0.01,
+            ticks: 0,
             panRange: false
-		},
-		xaxis: {
-			ticks: 0,
-			min: 0,
-			max: 1100
-		},
-		colors: ['#057cb8', 'orange', 'red', 'green'],
+        },
+        xaxis: {
+            ticks: 0
+        },
+        colors: ['#057cb8', 'orange', 'red', 'green'],
         grid: {
             hoverable: true,
             autoHighlight: false
+        }
+    };
+
+    var mainPlotOptions = $.extend(true, {}, baseOptions, {
+        xaxis: {
+            min: 0,
+            max: framesPerSecond * secondsPerWindow
+        }
+    });
+
+    var mainPlotOptionsAfterStreaming = $.extend(true, {}, mainPlotOptions, {
+        xaxis: {
+            max: null
         },
         pan: {
             interactive: true
         }
-	};
+    });
 
-	plot = $.plot("#placeholder", data, options);
+    var overviewPlotOptions = baseOptions;
 
-    var overview = $.plot('#overview', data, {
-        xaxis: {
-            ticks: 0
-        },
-        yaxis: {
-            ticks: 0
-        },
-        lines: {
-            lineWidth: 1
-        },selection: {
-			mode: "x",
-			color: '#057cb8'
-		},
-		colors: ['#057cb8', 'orange', 'red', 'green']
-        });
+    var overviewPlotOptionsAfterStreaming = $.extend(true, {}, overviewPlotOptions, {
+        selection: {
+            mode: "x",
+            color: '#057cb8'
+        }
+    });
 
-    var placeholder = $('#placeholder');
-    $('#overview').on('plotselected', function(e, ranges) {
-        plot = $.plot('#placeholder', data,
-            $.extend(true, {}, options, {
+    //state and data variables
+    var streamed = false;
+    var data = [frames[0], frames[1], []];
+    var audio = document.getElementById('audio');
+
+    //jQuery elements for containers
+    var plotContainer = $('#placeholder');
+    var overviewContainer = $('#overview');
+
+    //Flot objects for plots
+    var plot = $.plot(plotContainer, [], mainPlotOptions);
+    var overview = $.plot(overviewContainer, [], overviewPlotOptions);
+
+    //main timed loop for replotting
+    var prevTime = 0;
+    window.setInterval(function () {
+        var currentTime = audio.currentTime;
+        if (currentTime != prevTime) {
+            //pass elapsed fraction of audio play to replot()
+            replot(currentTime/audio.seekable.end(0));
+            prevTime = currentTime;
+        }
+    }, 100);
+
+    //event handlers on plot containers
+    overviewContainer.on('plotselected', function(e, ranges) {
+        if (!streamed) {
+            return;
+        }
+        plot = $.plot(plotContainer, data,
+            $.extend(true, {}, mainPlotOptions, {
              xaxis: { min: ranges.xaxis.from, max: ranges.xaxis.to }
         }));
     });
 
-    //.on('plothover', function(e, pos) {
-    placeholder.on('plotpan', function(e, plot, args) {
+    plotContainer.on('plotpan', function(e, plot, args) {
+        if (!streamed) {
+            return;
+        }
         var axes = plot.getAxes();
         var ranges = {
             xaxis: {
@@ -80,43 +119,31 @@ function init() {
                 to: axes.xaxis.max
             }
         }
-        overview.setSelection(ranges, true)
+        overview.setSelection(ranges, true);
     });
 
+    plotContainer.on('dblclick', function() {
+        if (!streamed) {
+            return;
+        }
+        var xaxis = plot.getAxes().xaxis;
+        var xmin = xaxis.datamin;
+        var xmax = xaxis.datamax;
+        plot = $.plot(plotContainer, data,
+            $.extend(true, {}, mainPlotOptions, {
+             xaxis: { min: xmin, max: xmax }
+        }));
+        overview = $.plot(overviewContainer, data,
+            $.extend(true, {}, overviewPlotOptions, {
+             xaxis: { min: xmin, max: xmax }
+        }));
+    });
 
-	var axes = plot.getAxes();
-	var xmin = axes.xaxis.datamin;
-	var xmax = axes.xaxis.datamax;
-	var ymin = axes.yaxis.datamin;
-	var ymax = axes.yaxis.datamax;
-
-	i = 0;
-
-	function replot(elapsedFraction) {
-		data[1] = [[elapsedFraction * (xmax - xmin), ymin], [elapsedFraction * (xmax - xmin), ymax]];
-		//data[0] = frames.slice(0, elapsedFraction * frames.length);
-		//data[1] = frames.slice(0, elapsedFraction * frames.length);
-		++i;
-		plot.setData(data);
-        overview.setData(data);
-        plot.getData()[1].lines.lineWidth = 3
-		plot.setupGrid();
-        overview.setupGrid();
-        overview.draw();
-		plot.draw();
-	}
-
-	replot(0);
-	var prevTime = 0;
-	window.setInterval(function () {
-		var currentTime = $('#audio').get(0).currentTime;
-		if (currentTime != prevTime) {
-			replot(currentTime/length);
-			prevTime = currentTime;
-		}
-	}, 100);
-
+    //play selection part button event handler
     $('#playpart').on('click', function() {
+        if (!streamed) {
+            return;
+        }
         $('#audio').on('timeupdate', function(e) {
             var startFraction = (axes.xaxis.max - axes.xaxis.datamin)/(axes.xaxis.datamax - axes.xaxis.datamin);
             if ((this.currentTime/this.seekable.end(0)) > startFraction) {
@@ -134,22 +161,63 @@ function init() {
         audio.play();
     });
 
-    $('#placeholder').on('dblclick', function() {
-        plot = $.plot('#placeholder', data,
-            $.extend(true, {}, options, {
-             xaxis: { min: xmin, max: xmax }
-        }));
-        overview = $.plot('#overview', data,
-            $.extend(true, {}, options, {
-             xaxis: { min: xmin, max: xmax }
-        }));
-    });
-}
+    function replot(elapsedFraction) {
+        var axes = plot.getAxes();
+        var xmin = axes.xaxis.datamin;
+        var xmax = axes.xaxis.datamax;
+        var ymin = axes.yaxis.datamin;
+        var ymax = axes.yaxis.datamax;
 
-$(document).ready(function() {
-	audioState++;
-	console.log(audioState);
-	if (audioState == 2) {
-		init();
-	}
-});
+        if (elapsedFraction == 1 && !streamed) {
+            streamed = true;
+            if (xmax > framesPerSecond * secondsPerWindow) {
+                var xaxis = mainPlotOptions.xaxis;
+                xaxis.max = xmax;
+                xaxis.min = xmax - (framesPerSecond * secondsPerWindow);
+            }
+            plot = $.plot(plotContainer, data, mainPlotOptions);
+            overview = $.plot(overviewContainer, data, overviewPlotOptions);
+        }
+
+        else if (!streamed) {
+            var lastFrame = elapsedFraction * (frames[0].length + frames[1].length);
+            var lastAIndex = 0;
+            var lastBIndex = 0;
+            for (var i = 0; i < frames[0].length; ++i) {
+                if (frames[0][i] == null) {
+                    continue;
+                }
+                if (frames[0][i][0] <= lastFrame) {
+                    lastAIndex = i;
+                }
+            }
+            for (var i = 0; i < frames[1].length; ++i) {
+                if (frames[1][i] == null) {
+                    continue;
+                }
+                if (frames[1][i][0] <= lastFrame) {
+                    lastBIndex = i;
+                }
+            }
+            data[0] = frames[0].slice(0, lastAIndex + 1);
+            data[1] = frames[1].slice(0, lastBIndex + 1);
+            if (xmax > framesPerSecond * secondsPerWindow) {
+                var xaxis = mainPlotOptions.xaxis;
+                xaxis.max = xmax;
+                xaxis.min = xmax - (framesPerSecond * secondsPerWindow);
+            }
+            plot = $.plot(plotContainer, data, mainPlotOptions);
+            overview = $.plot(overviewContainer, data, overviewPlotOptions);
+        }
+
+        else if (streamed) {
+            data[2] = [[elapsedFraction * (xmax - xmin), ymin], [elapsedFraction * (xmax - xmin), ymax]];
+            data[0] = frames[0];
+            data[1] = frames[1];
+            plot = $.plot(plotContainer, data, mainPlotOptionsAfterStreaming);
+            overview = $.plot(overviewContainer, data, overviewPlotOptionsAfterStreaming);
+        }
+    }
+
+    replot(0);
+}
