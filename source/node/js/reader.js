@@ -46,16 +46,13 @@ printer._flush = function(done) {
     for (var i = 0; i < vlen; ++i) {
         frames.push([i, values[i]/100]);
     }
-    
+
     audioState++;
 
     if (audioState == 2) {
         init();
     }
 }
-
-printer.on('end', function() {
-});
 
 reader.on('format', function(format) {
     blockAlign = format.blockAlign;
