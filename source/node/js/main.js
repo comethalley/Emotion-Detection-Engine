@@ -30,7 +30,7 @@ function init(config) {
         series: {
             lines: {
                 show: true,
-                lineWidth: 1
+                lineWidth: 2
             }
         },
         yaxis: {
@@ -41,7 +41,7 @@ function init(config) {
         xaxis: {
             ticks: 0
         },
-        colors: ['#057cb8', 'orange', 'red', 'green'],
+        colors: ['#057cb8', 'red', 'orange', 'green'],
         grid: {
             hoverable: true,
             autoHighlight: false
