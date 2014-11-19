@@ -30,10 +30,7 @@
       <![endif]-->
       <!-- Plotter -->
       <script src="Emodata/vendor/jquery.min.js"></script>
-	<script src="Emodata/vendor/jquery.flot.min.js"></script>
-	<script src="Emodata/vendor/jquery.flot.selection.min.js"></script>
-	<script src="Emodata/vendor/jquery.flot.navigate.min.js"></script>
-    
+      <script src="Emodata/jquery.flot.min.js"></script>
       <style>
          .hv {
          font-size:34px; padding:10px;cursor:pointer; color:green;
@@ -332,7 +329,7 @@
                               <li><a href="form_wizard.html">Form Wizard</a></li>
                               <li><a href="form_validation.html">Form Validation</a></li>
                               <li><a href="file_upload.html">Muliple File Upload</a></li>
-                              
+
                               <li><a href="dropzone.html">Dropzone</a></li>-->
                            <li><a href="inline_editor.html">Inline Editor</a></li>
                         </ul>
@@ -354,7 +351,7 @@
                         <span>Charts</span>
                         </a>
                         <ul class="sub">
-                           <li><a href="chartjs.html">Chartjs</a></li>                           
+                           <li><a href="chartjs.html">Chartjs</a></li>
                         </ul>
                      </li>
                      <!--<li class="sub-menu">
@@ -378,7 +375,7 @@
                             <li><a href="profile.html">Profile</a></li>
                             <li><a href="invoice.html">Invoice</a></li>
                             <li><a href="pricing_table.html">Pricing Table</a></li>
-                            <li><a href="timeline.html">Timeline</a></li>                    
+                            <li><a href="timeline.html">Timeline</a></li>
                         <!--<li><a href="gallery.html">Media Gallery</a></li>
                             <li><a href="404.html">404 Error</a></li>
                             <li><a href="500.html">500 Error</a></li>
@@ -408,13 +405,13 @@
                            <div class="top-stats-panel">
                               <div class="gauge-canvas">
                                  <h4 class="widget-h">Current Callee</h4>
-                                 <!--<canvas width=160 height=100 id="gaugeI">                      	
+                                 <!--<canvas width=160 height=100 id="gaugeI">
                                     </canvas>
                                     <script>
                                     var canvas = document.getElementById('myCanvas');
                                     var context = canvas.getContext('2d');
                                     var imageObj = new Image();
-                                    
+
                                     imageObj.onload = function() {
                                     context.drawImage(imageObj, 69, 50);
                                     };
@@ -493,13 +490,10 @@
                         <!-- Plotter -->
                         <div id="content">
                             <div class="demo-container">
-                                <div id="placeholder" style="width:800px; height: 500px; margin: auto" class="demo-placeholder"></div>
-                                <div id="overview" style="width:800px; height: 100px; margin: auto" class="demo-placeholder"></div>
+                                <div id="placeholder" style="width:100%; height: 500px; margin: auto" class="demo-placeholder"></div>
+                                <div id="overview" style="width:100%; height: 100px; margin: auto" class="demo-placeholder"></div>
                             </div>
                         </div>
-                        
-                        
-
                         </div>
                   </section>
                   <!--earning graph end-->
@@ -531,8 +525,12 @@
                         <script>
                             var audioState = 0;
                         </script>
+                        <script src="Emodata/vendor/jquery.flot.selection.min.js"></script>
+                        <script src="Emodata/vendor/jquery.flot.navigate.min.js"></script>
                         <script src="Emodata/reader.js"></script>
+
                         <script src="Emodata/main.js"></script>
+
                         <a href="chartjs.html"><span class="glyphicon glyphicon-stop hv" ></span> </a>
                         </div>
                      </section>
@@ -652,7 +650,7 @@
                                        <div class="ctext-wrap">
                                           <i>Shruti Hassan</i>
                                           <p>
-                                             Unlikely. He'll have to bear premiums. 
+                                             Unlikely. He'll have to bear premiums.
                                           </p>
                                        </div>
                                     </div>
@@ -718,6 +716,9 @@
                               </select>
                            </div>
                         </div>
+                        <script>
+                           console.log('asd', $.plot);
+                        </script>
                         <div class="panel-body">
                            <div class="row weather-full-info">
                               <div class="col-md-3 today-status">
@@ -1277,7 +1278,6 @@
       </section>
       <!-- Placed js at the end of the document so the pages load faster -->
       <!--Core js-->
-      <script src="js/jquery.js"></script>
       <script src="js/jquery-ui/jquery-ui-1.10.1.custom.min.js"></script>
       <script src="bs3/js/bootstrap.min.js"></script>
       <script src="js/jquery.dcjqaccordion.2.7.js"></script>
@@ -1294,29 +1294,13 @@
       <script src="js/evnt.calendar.init.js"></script>
       <script src="js/jvector-map/jquery-jvectormap-1.2.2.min.js"></script>
       <script src="js/jvector-map/jquery-jvectormap-us-lcc-en.js"></script>
-      <script src="js/gauge/gauge.js"></script>
-      <!--clock init-->
-      <script src="js/css3clock/js/css3clock.js"></script>
-      <!--Easy Pie Chart-->
-      <script src="js/easypiechart/jquery.easypiechart.js"></script>
-      <!--Sparkline Chart-->
-      <script src="js/sparkline/jquery.sparkline.js"></script>
-      <!--Morris Chart-->
-      <script src="js/morris-chart/morris.js"></script>
-      <script src="js/morris-chart/raphael-min.js"></script>
+
       <!--jQuery Flot Chart-->
-      <script src="js/flot-chart/jquery.flot.js"></script>
-      <script src="js/flot-chart/jquery.flot.tooltip.min.js"></script>
-      <script src="js/flot-chart/jquery.flot.resize.js"></script>
-      <script src="js/flot-chart/jquery.flot.pie.resize.js"></script>
-      <script src="js/flot-chart/jquery.flot.animator.min.js"></script>
-      <script src="js/flot-chart/jquery.flot.growraf.js"></script>
       <script src="js/dashboard.js"></script>
       <script src="js/jquery.customSelect.min.js" ></script>
       <!--common script init for all pages-->
       <script src="js/scripts.js"></script>
       <audio src="Emodata/data.wav" id="audio"></audio>
-      <script src="Emodata/main.js"></script>
       <!--script for this page-->
    </body>
 </html>

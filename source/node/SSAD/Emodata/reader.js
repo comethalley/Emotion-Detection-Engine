@@ -46,7 +46,6 @@ printer._flush = function(done) {
     for (var i = 0; i < vlen; ++i) {
         frames.push([i, values[i]/100]);
     }
-    
     audioState++;
 
     if (audioState == 2) {

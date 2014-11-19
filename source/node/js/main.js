@@ -175,8 +175,8 @@ function init(config) {
                 xaxis.max = xmax;
                 xaxis.min = xmax - (framesPerSecond * secondsPerWindow);
             }
-            plot = $.plot(plotContainer, data, mainPlotOptions);
-            overview = $.plot(overviewContainer, data, overviewPlotOptions);
+            plot = $.plot(plotContainer, data, mainPlotOptionsAfterStreaming);
+            overview = $.plot(overviewContainer, data, overviewPlotOptionsAfterStreaming);
         }
 
         else if (!streamed) {

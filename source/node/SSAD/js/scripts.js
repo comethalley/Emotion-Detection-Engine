@@ -221,7 +221,7 @@
             }
             $(".leftside-navigation").getNiceScroll().show();
             $('#main-content').toggleClass('merge-left');
-            e.stopPropagation();
+            //e.stopPropagation();
             if ($('#container').hasClass('open-right-panel')) {
                 $('#container').removeClass('open-right-panel')
             }
@@ -240,7 +240,7 @@
             $('.right-sidebar').toggleClass('open-right-bar');
             $('.header').toggleClass('merge-header');
 
-            e.stopPropagation();
+            //e.stopPropagation();
         });
 
         $('.header,#main-content,#sidebar').click(function () {

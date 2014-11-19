@@ -30,18 +30,18 @@ function init(config) {
         series: {
             lines: {
                 show: true,
-                lineWidth: 1
+                lineWidth: 2
             }
         },
         yaxis: {
-            autoscaleMargin: 0.01,
+            autoscaleMargin: 0.4,
             ticks: 0,
             panRange: false
         },
         xaxis: {
             ticks: 0
         },
-        colors: ['#057cb8', 'orange', 'red', 'green'],
+        colors: ['#057cb8', 'red', 'orange', 'green'],
         grid: {
             hoverable: true,
             autoHighlight: false
@@ -175,8 +175,12 @@ function init(config) {
                 xaxis.max = xmax;
                 xaxis.min = xmax - (framesPerSecond * secondsPerWindow);
             }
-            plot = $.plot(plotContainer, data, mainPlotOptions);
-            overview = $.plot(overviewContainer, data, overviewPlotOptions);
+            plot = $.plot(plotContainer, data, $.extend(true, {}, mainPlotOptionsAfterStreaming, {
+                xaxis: {
+                    //max: null
+                }
+            }));
+            overview = $.plot(overviewContainer, data, overviewPlotOptionsAfterStreaming);
         }
 
         else if (!streamed) {
