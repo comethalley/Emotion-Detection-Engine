@@ -57,7 +57,8 @@ function init(config) {
 
     var mainPlotOptionsAfterStreaming = $.extend(true, {}, mainPlotOptions, {
         xaxis: {
-            max: null
+            max: null,
+            panRange: [0, null]
         },
         pan: {
             interactive: true
@@ -103,7 +104,7 @@ function init(config) {
             return;
         }
         plot = $.plot(plotContainer, data,
-            $.extend(true, {}, mainPlotOptions, {
+            $.extend(true, {}, mainPlotOptionsAfterStreaming, {
              xaxis: { min: ranges.xaxis.from, max: ranges.xaxis.to }
         }));
     });
@@ -130,11 +131,11 @@ function init(config) {
         var xmin = xaxis.datamin;
         var xmax = xaxis.datamax;
         plot = $.plot(plotContainer, data,
-            $.extend(true, {}, mainPlotOptions, {
+            $.extend(true, {}, mainPlotOptionsAfterStreaming, {
              xaxis: { min: xmin, max: xmax }
         }));
         overview = $.plot(overviewContainer, data,
-            $.extend(true, {}, overviewPlotOptions, {
+            $.extend(true, {}, overviewPlotOptionsAfterStreaming, {
              xaxis: { min: xmin, max: xmax }
         }));
     });
@@ -175,6 +176,9 @@ function init(config) {
                 xaxis.max = xmax;
                 xaxis.min = xmax - (framesPerSecond * secondsPerWindow);
             }
+
+            mainPlotOptionsAfterStreaming.xaxis.panRange = [0, plot.getAxes().xaxis.datamax];
+
             plot = $.plot(plotContainer, data, $.extend(true, {}, mainPlotOptionsAfterStreaming, {
                 xaxis: {
                     //max: null
