@@ -1,0 +1,13 @@
+{
+  "name": "nw-test",
+  "window": {
+    "width": 800,
+    "height": 600,
+    "toolbar": false
+  },
+  "main": "index.html",
+  "dependencies": {
+    "wav": "~0.1.2",
+    "buffer-reader": "0.0.2"
+  }
+}
